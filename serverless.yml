@@ -9,7 +9,7 @@ provider:
 
 functions:
   sendResponse:
-    handler: api/handler.sendResponse
+    handler: api/handlers.sendResponse
     events:
       - httpApi:
           path: /api/results
@@ -18,9 +18,9 @@ functions:
             schema:
               application/json:
                 application/json: ${file(./schemas/sendResponse.json)}
-  api:
-    handler: index.handler
+  getResult:
+    handler: api/handlers.getResult
     events:
       - httpApi:
-          path: /
+          path: /api/results/{id} 
           method: get
