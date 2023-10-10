@@ -1,16 +1,10 @@
 import { randomUUID } from 'crypto'
 import express from 'express'
-import { join, dirname } from 'path'
-import { fileURLToPath } from 'url'
-
 
 const app = express()
-const __dirname = dirname(fileURLToPath(import.meta.url))
 
-const correctQuestions = [3, 1, 0, 2]
-const previousResults = new Map()
 
-app.use(express.json())
+
 app.post('/api/results', (req, res) => {
   const { name, answers } = req.body
   const correctAnswers = answers.reduce((acc, answer, index) => {
@@ -46,7 +40,4 @@ app.get('/api/results/:id', (req, res) => {
   res.json(result)
 })
 
-app.use(express.static(join(__dirname, 'interface')))
-app.listen(process.env.PORT || 3000, () => {
-  console.log('Server started')
-})
+
