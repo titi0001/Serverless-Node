@@ -1,70 +1,85 @@
-'use strict'
-const { randomUUID } = require('crypto');
+"use strict";
+const { MongoClient, ObjectId } = require("mongodb");
 
-const previousResults = new Map();
+async function connectToDatabase() {
+  const client = new MongoClient(process.env.MONGODB_CONNECTION_STRING, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+  const connection = await client.connect();
+  return connection.db(process.env.MONGODB_DB_NAME);
+}
 
 function extractBody(event) {
   if (!event?.body) {
     return {
-      statuscode: 422, 
-      body: JSON.stringify({error: 'Missing body'})
+      statuscode: 422,
+      body: JSON.stringify({ error: "Missing body" }),
     };
   }
-  return JSON.parse(event.body);  
+
+  return JSON.parse(event.body);
 }
 
 module.exports.sendResponse = async (event) => {
-   const { name, answers } = extractBody(event);
-   const correctQuestions = [3, 1, 0, 2];
-   const correctAnswers = answers.reduce((acc, answer, index) => {
-     if (answer === correctQuestions[index]) {
-       acc++;
-     }
-     return acc;
-   }, 0);
+  const { name, answers } = extractBody(event);
+  const correctQuestions = [3, 1, 0, 2];
 
-   const result = {
-     name,
-     correctAnswers,
-     totalAnswers: answers.length,
-   };
+  const totalCorrectAnswers = answers.reduce((acc, answer, index) => {
+    if (answer === correctQuestions[index]) {
+      acc++;
+    }
+    return acc;
+  }, 0);
 
-   const resultId = randomUUID();
-   previousResults.set(resultId, { response: {name, answers}, result });
+  const result = {
+    name,
+    answers,
+    totalCorrectAnswers,
+    totalAnswers: answers.length,
+  };
 
+  const client = await connectToDatabase();
+  const collection = client.collection("results");
+  const { insertedId } = await collection.insertOne(result);
 
-   return {
-     statuscode: 201,
-     body: JSON.stringify({
-       resultId,
-       __hypermedia: {
-         href: `/results.html`,
-         query: { id: resultId },
-       },
-     }),
-     headers: {
-        'Content-Type': 'application/json',
-     }
-   };
+  return {
+    statuscode: 201,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      resultId: insertedId,
+      __hypermedia: {
+        href: `/results.html`,
+        query: { id: insertedId },
+      },
+    }),
+  };
 };
 
-
 module.exports.getResult = async (event) => {
-    const result = previousResults.get(event.pathParameters.id);
-    if (!result) {
-      return {
-        statuscode: 404,
-        body: JSON.stringify({error: 'Result not found'}),
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      }
-    }
-    return{
-      statuscode: 200,
+  const client = await connectToDatabase();
+  const collection = await client.collection("results");
+
+  const result = await collection.findOne({
+    _id: new ObjectId(event.pathParameters.id),
+  });
+
+  if (!result) {
+    return {
+      statuscode: 404,
+      body: JSON.stringify({ error: "Result not found" }),
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(result),
-    }
-}
+    };
+  }
+  return {
+    statuscode: 200,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(result),
+  };
+};
