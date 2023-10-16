@@ -37,6 +37,16 @@ functions:
       - httpApi:
           path: /api/results/{id} 
           method: get
-
+  login:
+    handler: api/handlers.login
+    events:
+      - httpApi:
+          path: /api/login
+          method: post
+          request:
+            schema:
+              application/json:
+                application/json: ${file(./schemas/login.json)}
+  
 plugins:
   - serverless-offline

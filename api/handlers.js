@@ -1,7 +1,6 @@
 "use strict";
 const { MongoClient, ObjectId } = require("mongodb");
 const { pbkdf2Sync } = require('crypto');
-const { log } = require("console");
 
 let connectionInstance = null;
 
