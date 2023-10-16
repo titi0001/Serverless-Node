@@ -1,14 +1,61 @@
 "use strict";
 const { MongoClient, ObjectId } = require("mongodb");
+const { pbkdf2Sync } = require('crypto');
+const { log } = require("console");
+
+let connectionInstance = null;
 
 async function connectToDatabase() {
+  if (connectionInstance) return connectionInstance;
   const client = new MongoClient(process.env.MONGODB_CONNECTION_STRING, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   });
   const connection = await client.connect();
-  return connection.db(process.env.MONGODB_DB_NAME);
+  connectionInstance = connection.db(process.env.MONGODB_DB_NAME);
+  return connectionInstance;
 }
+
+async function basicAuth(event) {
+  const  { authorization } = event.headers;
+  if (!authorization) {
+    return {
+      statuscode: 401,
+      body: JSON.stringify({ error: "Missing authorization header" }),
+    };
+  }
+
+  const [type, credentials] = authorization.split(" ");
+  if (type !== "Basic") {
+    return {
+      statuscode: 401,
+      body: JSON.stringify({ error: "Unsupported authorization" }),
+    };
+  }
+
+  const [username, password] = Buffer.from(credentials, "base64").toString().split(":");
+  const hashedPass = pbkdf2Sync(password, process.env.SALT, 100000, 64, 'sha512').toString('hex');
+
+
+  const client = await connectToDatabase();
+  const collection = client.collection("users");
+  const user = await collection.findOne({ 
+    name: username, 
+    password: hashedPass 
+  });
+
+  if (!user) {
+    return {
+      statuscode: 401,
+      body: JSON.stringify({ error: "Invalid credentials" }),
+    };
+  }
+  return {
+    id: user._id,
+    username: user.username,
+  }
+}
+
 
 function extractBody(event) {
   if (!event?.body) {
@@ -22,6 +69,9 @@ function extractBody(event) {
 }
 
 module.exports.sendResponse = async (event) => {
+  const authResult = await basicAuth(event);
+  if (authResult.statuscode === 401)  return authResult;
+  
   const { name, answers } = extractBody(event);
   const correctQuestions = [3, 1, 0, 2];
 
@@ -59,6 +109,9 @@ module.exports.sendResponse = async (event) => {
 };
 
 module.exports.getResult = async (event) => {
+  const authResult = await basicAuth(event);
+  if (authResult.statuscode === 401)  return authResult;
+
   const client = await connectToDatabase();
   const collection = await client.collection("results");
 

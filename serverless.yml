@@ -8,6 +8,7 @@ params:
     dbName: db-serverless
   dev:
     connectionString: mongodb://localhost:27017/${self:params.default.dbName}
+    salt: wbOGtToR74Lbhyl0XCodIWfmnDyHwdlk
   prod:
 
 provider:
@@ -16,6 +17,8 @@ provider:
   environment:
     MONGODB_CONNECTION_STRING: ${param:connectionString}
     MONGODB_DB_NAME: ${param:dbName}
+    SALT: ${param:salt}
+  region: us-east-1
 
 functions:
   sendResponse:
