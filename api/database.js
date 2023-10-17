@@ -1,5 +1,7 @@
 const { MongoClient, ObjectId } = require("mongodb");
 
+let connectionInstance = null;
+
 async function connectToDatabase() {
   if (connectionInstance) return connectionInstance;
 
@@ -15,7 +17,7 @@ async function connectToDatabase() {
 async function getUserByCredentials(username, password) {
   const client = await connectToDatabase();
   const collection = client.collection("users");
-  const user = collection.findOne({ username, password });
+  const user = await collection.findOne({ name: username, password: password });
 
   if (!user) return null;
   return user;
