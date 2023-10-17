@@ -1,8 +1,7 @@
 "use strict";
-const { pbkdf2Sync } = require("crypto");
-const { sign, verify } = require("jsonwebtoken");
-const buildResponse = require("./utils").buildResponse;
-const { getUserByCredentials, saveResultsToDatabase } = require("./database");
+const { buildResponse } = require("./utils");
+const { getUserByCredentials, saveResultsToDatabase, getResultsById } = require("./database");
+const { makeHash, authorize, createToken } = require("./auth");
 
 let connectionInstance = null;
 
@@ -12,44 +11,14 @@ function extractBody(event) {
   return JSON.parse(event.body);
 }
 
-async function authorize(event) {
-  const { authorization } = event.headers;
-
-  if (!authorization)
-    buildResponse(401, { error: "Missing authorization header" });
-
-  const [type, token] = authorization.split(" ");
-  if (type != "Bearer" || !token)
-    buildResponse(401, { error: "Invalid authorization scheme" });
-
-  const decoded = verify(token, process.env.JWT_SECRET, {
-    audience: "Serverless-nodejs",
-  });
-  if (!decoded) buildResponse(401, { error: "Invalid token" });
-
-  return decoded;
-}
-
 module.exports.login = async (event) => {
   const { username, password } = extractBody(event);
-  const hashedPass = pbkdf2Sync(
-    password,
-    process.env.SALT,
-    100000,
-    64,
-    "sha512"
-  ).toString("hex");
+  const hashedPass = makeHash(password);
 
   const user = await getUserByCredentials(username, hashedPass);
-
   if (!user) buildResponse(401, { error: "Invalid credentials" });
 
-  const token = sign({ username, id: user._id }, process.env.JWT_SECRET, {
-    expiresIn: "24h",
-    audience: "Serverless-nodejs",
-  });
-
-  return buildResponse(200, { token });
+  return buildResponse(200, { token: createToken(username, user._id) });
 };
 
 module.exports.sendResponse = async (event) => {
