@@ -1,6 +1,7 @@
-"use strict";
-const { MongoClient, ObjectId } = require("mongodb");
+'use strict'
 const { pbkdf2Sync } = require('crypto');
+const { sign, verify } = require('jsonwebtoken');
+const { MongoClient, ObjectId } = require("mongodb");
 
 let connectionInstance = null;
 
@@ -15,51 +16,10 @@ async function connectToDatabase() {
   return connectionInstance;
 }
 
-async function basicAuth(event) {
-  const  { authorization } = event.headers;
-  if (!authorization) {
-    return {
-      statuscode: 401,
-      body: JSON.stringify({ error: "Missing authorization header" }),
-    };
-  }
-
-  const [type, credentials] = authorization.split(" ");
-  if (type !== "Basic") {
-    return {
-      statuscode: 401,
-      body: JSON.stringify({ error: "Unsupported authorization" }),
-    };
-  }
-
-  const [username, password] = Buffer.from(credentials, "base64").toString().split(":");
-  const hashedPass = pbkdf2Sync(password, process.env.SALT, 100000, 64, 'sha512').toString('hex');
-
-
-  const client = await connectToDatabase();
-  const collection = client.collection("users");
-  const user = await collection.findOne({ 
-    name: username, 
-    password: hashedPass 
-  });
-
-  if (!user) {
-    return {
-      statuscode: 401,
-      body: JSON.stringify({ error: "Invalid credentials" }),
-    };
-  }
-  return {
-    id: user._id,
-    username: user.username,
-  }
-}
-
-
 function extractBody(event) {
   if (!event?.body) {
     return {
-      statuscode: 422,
+      statusCode: 422,
       body: JSON.stringify({ error: "Missing body" }),
     };
   }
@@ -67,9 +27,69 @@ function extractBody(event) {
   return JSON.parse(event.body);
 }
 
+async function authorize(event) {
+  const { authorization } = event.headers;
+ 
+  if(!authorization){
+    return{
+      statusCode: 401,
+      body: JSON.stringify({ error: "Missing authorization header" }),
+    };
+  }
+
+  const [type, token] = authorization.split(' ');
+  if (type != 'Bearer' || !token) {
+    return {
+      statusCode: 401,
+      body: JSON.stringify({ error: "Invalid authorization scheme" }),
+    };
+  }
+
+  const decoded = verify(token, process.env.JWT_SECRET, { audience: 'Serverless-nodejs' });
+  if (!decoded) {
+    return {
+      statusCode: 401,
+      body: JSON.stringify({ error: "Invalid token" }),
+    };
+  }
+  return decoded
+}
+
+
+module.exports.login = async ( event ) => {
+  const { username, password } = extractBody(event); 
+  const hashedPass = pbkdf2Sync(password, process.env.SALT, 100000, 64, 'sha512').toString('hex');
+
+  const client = await connectToDatabase();
+  const collection = client.collection("users");
+  const user = await collection.findOne({ name: username, password: hashedPass });
+
+  if (!user) {
+    return {
+      statusCode: 401,
+      body: JSON.stringify({ error: "Invalid credentials" }),
+    };
+  }
+
+  const token = sign( { username, id: user._id }, process.env.JWT_SECRET, { 
+    expiresIn: '24h', 
+    audience: 'Serverless-nodejs'
+  })
+  
+  return {
+    statusCode: 200,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ token }),
+  }
+ 
+};
+
 module.exports.sendResponse = async (event) => {
-  const authResult = await basicAuth(event);
-  if (authResult.statuscode === 401)  return authResult;
+  const authResult = await authorize(event);
+
+  if (authResult.statusCode === 401)  return authResult;
   
   const { name, answers } = extractBody(event);
   const correctQuestions = [3, 1, 0, 2];
@@ -93,7 +113,7 @@ module.exports.sendResponse = async (event) => {
   const { insertedId } = await collection.insertOne(result);
 
   return {
-    statuscode: 201,
+    statusCode: 201,
     headers: {
       "Content-Type": "application/json",
     },
@@ -108,8 +128,8 @@ module.exports.sendResponse = async (event) => {
 };
 
 module.exports.getResult = async (event) => {
-  const authResult = await basicAuth(event);
-  if (authResult.statuscode === 401)  return authResult;
+  const authResult = await authorize(event);
+  if (authResult.statusCode === 401)  return authResult;
 
   const client = await connectToDatabase();
   const collection = await client.collection("results");
@@ -120,7 +140,7 @@ module.exports.getResult = async (event) => {
 
   if (!result) {
     return {
-      statuscode: 404,
+      statusCode: 404,
       body: JSON.stringify({ error: "Result not found" }),
       headers: {
         "Content-Type": "application/json",
@@ -128,7 +148,7 @@ module.exports.getResult = async (event) => {
     };
   }
   return {
-    statuscode: 200,
+    statusCode: 200,
     headers: {
       "Content-Type": "application/json",
     },
