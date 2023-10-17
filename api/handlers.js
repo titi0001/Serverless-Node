@@ -2,11 +2,13 @@
 const { pbkdf2Sync } = require('crypto');
 const { sign, verify } = require('jsonwebtoken');
 const { MongoClient, ObjectId } = require("mongodb");
+const buildResponse = require('./utils').buildResponse;
 
 let connectionInstance = null;
 
 async function connectToDatabase() {
   if (connectionInstance) return connectionInstance;
+
   const client = new MongoClient(process.env.MONGODB_CONNECTION_STRING, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -17,12 +19,7 @@ async function connectToDatabase() {
 }
 
 function extractBody(event) {
-  if (!event?.body) {
-    return {
-      statusCode: 422,
-      body: JSON.stringify({ error: "Missing body" }),
-    };
-  }
+  if (!event?.body) buildResponse(422, { error: "Missing body" });
 
   return JSON.parse(event.body);
 }
@@ -30,31 +27,16 @@ function extractBody(event) {
 async function authorize(event) {
   const { authorization } = event.headers;
  
-  if(!authorization){
-    return{
-      statusCode: 401,
-      body: JSON.stringify({ error: "Missing authorization header" }),
-    };
-  }
-
+  if(!authorization) buildResponse(401, { error: "Missing authorization header" });
+  
   const [type, token] = authorization.split(' ');
-  if (type != 'Bearer' || !token) {
-    return {
-      statusCode: 401,
-      body: JSON.stringify({ error: "Invalid authorization scheme" }),
-    };
-  }
+  if (type != 'Bearer' || !token) buildResponse(401, { error: "Invalid authorization scheme" });
 
   const decoded = verify(token, process.env.JWT_SECRET, { audience: 'Serverless-nodejs' });
-  if (!decoded) {
-    return {
-      statusCode: 401,
-      body: JSON.stringify({ error: "Invalid token" }),
-    };
-  }
+  if (!decoded) buildResponse(401, { error: "Invalid token" });
+  
   return decoded
 }
-
 
 module.exports.login = async ( event ) => {
   const { username, password } = extractBody(event); 
@@ -64,25 +46,14 @@ module.exports.login = async ( event ) => {
   const collection = client.collection("users");
   const user = await collection.findOne({ name: username, password: hashedPass });
 
-  if (!user) {
-    return {
-      statusCode: 401,
-      body: JSON.stringify({ error: "Invalid credentials" }),
-    };
-  }
-
+  if (!user) buildResponse(401, { error: "Invalid credentials" });
+    
   const token = sign( { username, id: user._id }, process.env.JWT_SECRET, { 
     expiresIn: '24h', 
     audience: 'Serverless-nodejs'
   })
   
-  return {
-    statusCode: 200,
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ token }),
-  }
+  return  buildResponse(200, { token });
  
 };
 
@@ -112,19 +83,13 @@ module.exports.sendResponse = async (event) => {
   const collection = client.collection("results");
   const { insertedId } = await collection.insertOne(result);
 
-  return {
-    statusCode: 201,
-    headers: {
-      "Content-Type": "application/json",
+  return buildResponse(201, {
+    resultId: insertedId,
+    __hypermedia: {
+      href: `/results.html`,
+      query: { id: insertedId },
     },
-    body: JSON.stringify({
-      resultId: insertedId,
-      __hypermedia: {
-        href: `/results.html`,
-        query: { id: insertedId },
-      },
-    }),
-  };
+  });
 };
 
 module.exports.getResult = async (event) => {
@@ -138,20 +103,7 @@ module.exports.getResult = async (event) => {
     _id: new ObjectId(event.pathParameters.id),
   });
 
-  if (!result) {
-    return {
-      statusCode: 404,
-      body: JSON.stringify({ error: "Result not found" }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    };
-  }
-  return {
-    statusCode: 200,
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(result),
-  };
+  if (!result) buildResponse(404, { error: "Result not found" });
+  
+  return buildResponse(200, result);
 };
