@@ -1,6 +1,6 @@
 org: titiura
-app: aws-node-http-api-project
-service: aws-node-http-api-project
+app: aws-node-serverless
+service: api-project
 frameworkVersion: '3'
 
 params:
@@ -8,14 +8,21 @@ params:
     dbName: db-serverless
   dev:
     connectionString: mongodb://localhost:27017/${self:params.default.dbName}
+    salt: wbOGtToR74Lbhyl0XCodIWfmnDyHwdlk
+    jwtSecret: bEm70iUEhJTVxNEgvvRwddb1Gt4loMdbzhUQOMxdMI7J8pelbLKfofCWGguZK0DJ
   prod:
 
 provider:
+  httpApi:
+    cors: true
   name: aws
   runtime: nodejs18.x
   environment:
     MONGODB_CONNECTION_STRING: ${param:connectionString}
     MONGODB_DB_NAME: ${param:dbName}
+    SALT: ${param:salt}
+    JWT_SECRET: ${param:jwtSecret}
+  region: eu-west-1
 
 functions:
   sendResponse:
@@ -34,6 +41,16 @@ functions:
       - httpApi:
           path: /api/results/{id} 
           method: get
-
+  login:
+    handler: api/handlers.login
+    events:
+      - httpApi:
+          path: /api/login
+          method: post
+          request:
+            schema:
+              application/json:
+                application/json: ${file(./schemas/login.json)}
+  
 plugins:
   - serverless-offline
