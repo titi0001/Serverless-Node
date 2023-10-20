@@ -1,6 +1,6 @@
 org: titiura
-app: aws-node-http-api-project
-service: aws-node-http-api-project
+app: aws-node-serverless
+service: api-project
 frameworkVersion: '3'
 
 params:
@@ -20,7 +20,7 @@ provider:
     MONGODB_DB_NAME: ${param:dbName}
     SALT: ${param:salt}
     JWT_SECRET: ${param:jwtSecret}
-  region: us-east-1
+  region: eu-west-1
 
 functions:
   sendResponse:
