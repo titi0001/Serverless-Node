@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "serverless-offline": "^13.2.0",
+    "serverless-s3-local": "^0.8.1"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.433.0"
+  }
+}
