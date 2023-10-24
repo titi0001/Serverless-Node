@@ -3,6 +3,9 @@ const {
   PutObjectCommand,
   GetObjectCommand,
 } = require("@aws-sdk/client-s3");
+const { readFile } = require("fs/promises");
+
+const {join} = require("path");
 
 function createClientS3() {
   return new S3Client({
@@ -18,32 +21,18 @@ function createClientS3() {
 async function fazUploadNoBucket() {
   const client = createClientS3();
 
+  const nomeArquivo = "cadastrar_alunos.csv";
+  const caminhoArquivo = join(__dirname, nomeArquivo);
+  const dadosCsv = await readFile(caminhoArquivo);
+
   const comandoUpload = new PutObjectCommand({
     Bucket: "alunos-csv-local",
-    Key: "teste.csv",
-    Body: Buffer.from("12345"),
+    Key: nomeArquivo,
+    Body: dadosCsv
   });
 
   await client.send(comandoUpload);
 }
-
-module.exports.simulandoUploadDoCsv = async (event) => {
-  try {
-    await fazUploadNoBucket();
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        mensagem: "Simulando o upload do arquivo...",
-      }),
-    };
-  } catch (error) {
-    return {
-      statusCode: error.statusCode || 500,
-      body: JSON.stringify(error),
-    };
-  }
-};
 
 async function obtemDadosDoCsvDoBucket(nome, chave) {
   const client = createClientS3();
@@ -59,15 +48,7 @@ async function obtemDadosDoCsvDoBucket(nome, chave) {
   return dadosCsv;
 }
 
-module.exports.cadastrarAlunos = async (event) => {
-  const eventoS3 = event.Records[0].s3;
-
-  const nomeBucket = eventoS3.bucket.name;
-  const chaveBucket = decodeURIComponent(
-    eventoS3.object.key.replace(/\+/g, " ")
-  );
-
-  const dados = await obtemDadosDoCsvDoBucket(nomeBucket, chaveBucket);
-
-  console.log(dados);
+module.exports = {
+  fazUploadNoBucket,
+  obtemDadosDoCsvDoBucket,
 };

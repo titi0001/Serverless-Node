@@ -9,7 +9,7 @@ provider:
 
 functions:
   simulandoUploadDoCsv:
-    handler: src/index.simulandoUploadDoCsv
+    handler: src/cadastro_batch/local/index.simulandoUploadDoCsv
     events:
       - httpApi:
           method: post
@@ -17,7 +17,7 @@ functions:
           cors: true
           
   cadastrarAlunos:
-    handler: src/index.cadastrarAlunos
+    handler: src/cadastro_batch/local/index.cadastrarAlunos
     events:
       - s3:
           bucket: alunos-csv-local
