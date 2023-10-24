@@ -1,13 +1,23 @@
 const { parse } = require("fast-csv");
 
-function convertDadosCsv(dados) {
-  const stream = parse({ headers: ["nome", "email"], renameHeaders: true })
-    .on("data", (aluno) => console.log(aluno))
-    .on("error", (error) => console.error(error))
-    .on("end", () => console.log("o arquivo CSV foi processado com sucesso"));
+async function convertDadosCsv(dados) {
+  const resultado = await new Promise((resolve, reject) => {
+    const alunos = [];
 
-  stream.write(dados);
-  stream.end();
+    const stream = parse({ headers: ["nome", "email"], renameHeaders: true })
+      .on("data", (aluno) => alunos.push(aluno))
+      .on("error", (error) =>
+        reject(new Error("Houve um erro no processamento do CSV."))
+      )
+      .on("end", () => resolve(alunos));
+
+    stream.write(dados);
+    stream.end();
+  });
+
+  if (resultado instanceof Error) throw resultado;
+
+  return resultado;
 }
 
 module.exports = {
