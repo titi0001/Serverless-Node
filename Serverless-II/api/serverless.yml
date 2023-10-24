@@ -1,0 +1,29 @@
+org: titiura
+app: serverless-2-lambda
+service: api-lambda
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+
+functions:
+  simulandoUploadDoCsv:
+    handler: src/cadastro_batch/local/index.simulandoUploadDoCsv
+    events:
+      - httpApi:
+          method: post
+          path: /alunos/batch
+          cors: true
+          
+  cadastrarAlunos:
+    handler: src/cadastro_batch/local/index.cadastrarAlunos
+    events:
+      - s3:
+          bucket: alunos-csv-local
+          event: s3:ObjectCreated:*
+          rules:
+            - suffix: .csv
+plugins:
+  - serverless-offline
+  - serverless-s3-local
