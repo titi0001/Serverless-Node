@@ -33,7 +33,7 @@ module.exports.cadastrarAlunos = async (event) => {
     const alunos = await convertDadosCsv(dados);
 
     await cadastrarAlunosNoBd(alunos)
-    console.log("Cadastro do s alunos realizado com sucesso ");
+    console.log("Cadastro dos alunos realizado com sucesso ");
   } catch (error) {
     console.log(error);
   }
