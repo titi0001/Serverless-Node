@@ -1,3 +1,4 @@
+const { GetObjectCommand } = require("@aws-sdk/client-s3");
 const { cadastrarAlunosNoBd } = require("../cadastarAlunosNoBd");
 const { convertDadosCsv } = require("../convertDadosCsv");
 
