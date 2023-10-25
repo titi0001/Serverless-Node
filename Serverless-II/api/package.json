@@ -1,5 +1,6 @@
 {
   "devDependencies": {
+    "serverless-disable-functions": "^1.0.0",
     "serverless-offline": "^13.2.0",
     "serverless-s3-local": "^0.8.1"
   },
