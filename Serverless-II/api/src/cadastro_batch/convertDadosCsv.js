@@ -10,16 +10,16 @@ async function convertDadosCsv(dados) {
       .validate((aluno) => regexEmail.test(aluno.email))
       .on("data", (aluno) => alunos.push(aluno))
       .on("data-invalid", (aluno) =>
-        rejeitar(
+        reject(
           new Error(
             `O email informado para o aluno ${aluno.nome} é inválido (${aluno.email})`
           )
         )
       )
       .on("error", (erro) =>
-        rejeitar(new Error("Houve um erro no processamento do arquivo CSV."))
+        reject(new Error("Houve um erro no processamento do arquivo CSV."))
       )
-      .on("end", () => resolver(alunos));
+      .on("end", () => resolve(alunos));
 
     stream.write(dados);
     stream.end();

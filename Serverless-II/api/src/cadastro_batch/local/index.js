@@ -1,3 +1,4 @@
+const { cadastrarAlunosNoBd } = require("../cadastarAlunosNoBd");
 const { convertDadosCsv } = require("../convertDadosCsv");
 const { fazUploadNoBucket, obtemDadosDoCsvDoBucket } = require("./serverS3");
 
@@ -29,9 +30,10 @@ module.exports.cadastrarAlunos = async (event) => {
     );
 
     const dados = await obtemDadosDoCsvDoBucket(nomeBucket, chaveBucket);
-
     const alunos = await convertDadosCsv(dados);
-    console.log(alunos);
+
+    await cadastrarAlunosNoBd(alunos)
+    console.log("Cadastro do s alunos realizado com sucesso ");
   } catch (error) {
     console.log(error);
   }
