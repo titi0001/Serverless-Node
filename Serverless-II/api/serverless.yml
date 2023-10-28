@@ -1,5 +1,5 @@
 org: titiura
-app: serverless-2-lambda
+app: api-lambda
 service: api-lambda
 frameworkVersion: '3'
 
@@ -13,14 +13,14 @@ provider:
           Action:
             - s3:GetObject
           Resource:
-            - arn:aws:s3:::alunos-csv/*
+            - arn:aws:s3:::alunos-csv-titiura/*
 
 functions:
   cadastrarAlunos:
     handler: src/cadastro_batch/aws/index.cadastrarAlunos
     events:
       - s3:
-          bucket: alunos-csv
+          bucket: alunos-csv-titiura
           event: s3:ObjectCreated:*
           rules:
             - suffix: .csv
@@ -31,7 +31,6 @@ functions:
       - httpApi:
           method: post
           path: /alunos/batch
-          cors: true
     enabled: false
           
   cadastrarAlunosDoBucketLocal:
