@@ -1,26 +1,22 @@
+const { GetObjectCommand, S3Client } = require("@aws-sdk/client-s3");
 const { cadastrarAlunosNoBd } = require("../cadastarAlunosNoBd");
 const { convertDadosCsv } = require("../convertDadosCsv");
-const { fazUploadNoBucket, obtemDadosDoCsvDoBucket } = require("./serverS3");
 
-module.exports.simulandoUploadDoCsv = async (event) => {
-  try {
-    await fazUploadNoBucket();
+async function obtemDadosDoCsvDoBucket(nome, chave) {
+  const client = new S3Client({});
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        mensagem: "Simulando o upload do arquivo...",
-      }),
-    };
-  } catch (error) {
-    return {
-      statusCode: error.statusCode || 500,
-      body: JSON.stringify(error),
-    };
-  }
-};
+  const comando = new GetObjectCommand({
+    Bucket: nome,
+    Key: chave,
+  });
 
-module.exports.cadastrarAlunosDoBucketLocal = async (event) => {
+  const response = await client.send(comando);
+  const dadosCsv = await response.Body.transformToString("utf-8");
+
+  return dadosCsv;
+}
+
+module.exports.cadastrarAlunos = async (event) => {
   try {
     const eventoS3 = event.Records[0].s3;
 
@@ -32,7 +28,7 @@ module.exports.cadastrarAlunosDoBucketLocal = async (event) => {
     const dados = await obtemDadosDoCsvDoBucket(nomeBucket, chaveBucket);
     const alunos = await convertDadosCsv(dados);
 
-    await cadastrarAlunosNoBd(alunos)
+    await cadastrarAlunosNoBd(alunos);
     console.log("Cadastro dos alunos realizado com sucesso ");
   } catch (error) {
     console.log(error);
