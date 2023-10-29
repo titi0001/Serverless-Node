@@ -1,7 +1,11 @@
-const BASE_URL = "http://curso-serverless2-api-228541440.us-east-1.elb.amazonaws.com";
+import geraUrlPreassinada from "./geradorUrlS3";
+
+
+const BASE_URL =
+  "http://curso-serverless2-api-228541440.us-east-1.elb.amazonaws.com";
 
 function buildFetchObj(metodo, contentType, body) {
-  return ({
+  return {
     method: metodo,
     headers: {
       "Content-Type": contentType,
@@ -10,11 +14,15 @@ function buildFetchObj(metodo, contentType, body) {
       "Access-Control-Allow-Methods": "PUT,POST,GET",
     },
     body: body,
-  });
+  };
 }
 
 async function criaRegistro(novoRegistro) {
-  const fetchObj = buildFetchObj("POST", "application/json", JSON.stringify(novoRegistro))
+  const fetchObj = buildFetchObj(
+    "POST",
+    "application/json",
+    JSON.stringify(novoRegistro)
+  );
   try {
     const res = await fetch(`${BASE_URL}/alunos`, fetchObj);
     return res.json();
@@ -22,5 +30,13 @@ async function criaRegistro(novoRegistro) {
     return erro;
   }
 }
+async function enviaArquivoViaURL() {
 
-export { criaRegistro };
+}
+
+async function geraPresignURL(nomeArquivo) {
+  const UrlChave = await geraUrlPreassinada(nomeArquivo);
+  console.log(UrlChave);
+}
+
+export { criaRegistro, enviaArquivoViaURL, geraPresignURL };
