@@ -1,9 +1,10 @@
-import { forwardRef } from "react";
+import React from "react";
 import "./CampoArquivo.css";
 
+const { forwardRef} = React;
 const CampoArquivo = forwardRef(function CampoArquivo(props, ref) {
   return (
-      <div className='campo-texto'>
+    <div className="campo-texto">
       <label>{props.label}</label>
       <input
         ref={ref}

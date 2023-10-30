@@ -1,8 +1,10 @@
-import { useState, useRef } from "react";
+import React from "react";
 import Botao from "../Botao";
 import CampoArquivo from "../CampoArquivo";
 import { geraPresignURL, enviaArquivoViaURL } from "../../servicos/api-connect";
 import "./FormularioBatch.css";
+
+const { useState, useRef } = React;
 
 const FormularioBatch = (props) => {
   const [ arquivoSelecionado, setArquivoSelecionado ] = useState(null)

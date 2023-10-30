@@ -1,8 +1,9 @@
-import { useState } from "react";
+import React from "react";
 import Botao from "../Botao";
 import CampoTexto from "../CampoTexto";
 import "./FormularioSingle.css";
 
+const { useState } = React;
 const defaultState = { value: "", error: true };
 
 const FormularioSingle = (props) => {

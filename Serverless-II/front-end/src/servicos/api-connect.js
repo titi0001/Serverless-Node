@@ -1,6 +1,5 @@
 import geraUrlPreassinada from "./geradorUrlS3";
 
-
 const BASE_URL =
   "http://curso-serverless2-api-228541440.us-east-1.elb.amazonaws.com";
 
@@ -30,13 +29,23 @@ async function criaRegistro(novoRegistro) {
     return erro;
   }
 }
-async function enviaArquivoViaURL() {
-
+async function enviaArquivoViaURL(url, arquivo) {
+  const fetchObj = buildFetchObj("PUT", "text/csv; charset=utf-8", arquivo);
+  try {
+    const res = await fetch(`${url}/alunos`, fetchObj);
+    if (res.status === 200) {
+      return "upload do arquivo concluído";
+    } else {
+      return "falha no upload";
+    }
+  } catch (erro) {
+    return erro;
+  }
 }
 
 async function geraPresignURL(nomeArquivo) {
   const UrlChave = await geraUrlPreassinada(nomeArquivo);
-  console.log(UrlChave);
+  return UrlChave;
 }
 
 export { criaRegistro, enviaArquivoViaURL, geraPresignURL };

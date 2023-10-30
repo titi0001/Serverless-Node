@@ -1,4 +1,5 @@
 import "./Botao.css";
+import React from "react";
 
 const Botao = (props) => {
   return (

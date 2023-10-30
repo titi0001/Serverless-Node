@@ -1,7 +1,9 @@
-import { useState } from "react";
+import React from "react";
 import FormularioSingle from "./componentes/FormularioSingle";
 import FormularioBatch from "./componentes/FormularioBatch";
 import { criaRegistro } from "./servicos/api-connect";
+
+const { useState } = React;
 
 function App() {
   const [alunos, setAlunos] = useState([]);
