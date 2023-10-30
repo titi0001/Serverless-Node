@@ -20,6 +20,7 @@ async function criaRegistro(novoRegistro) {
   const fetchObj = buildFetchObj("POST", "application/json", JSON.stringify(novoRegistro))
   try {
     const res = await fetch(`${BASE_URL}/alunos`, fetchObj);
+    console.log(res);
     return res.json();
   } catch (erro) {
     return erro;

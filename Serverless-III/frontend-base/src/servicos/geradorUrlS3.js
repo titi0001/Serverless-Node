@@ -15,7 +15,7 @@ async function geraUrlPreassinada(chaveArquivo) {
   const s3Payload = credentials ? { credentials, region: "us-east-1"} : null;
   const s3Client = new S3Client(s3Payload)
   const command = new PutObjectCommand({
-    Bucket: "alunos-csv",
+    Bucket: "alunos-csv-titiura",
     Key: chaveArquivo
   });
 
