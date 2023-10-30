@@ -1,11 +1,11 @@
-org: aquijuz
+org: titiura
 app: serverless-3
-service: serverless-3
+service: api-alunos
 frameworkVersion: '3'
 
 resources:
   extensions:
-    S3BucketAlunoscsv:
+    S3BucketAlunoscsvtitiura:
       Properties:
         CorsConfiguration:
           CorsRules:
@@ -23,7 +23,7 @@ params:
   dev:
     bucket: alunos-csv-local
   prod:
-    bucket: alunos-csv
+    bucket: alunos-csv-titiura
 
 provider:
   name: aws
@@ -35,7 +35,7 @@ provider:
           Action: 
             - s3:GetObject
           Resource: 
-            - arn:aws:s3:::alunos-csv/*
+            - arn:aws:s3:::alunos-csv-titiura/*
   environment:
     STAGE: ${sls:stage}
 
@@ -44,7 +44,7 @@ functions:
     handler: src/functions/cadastro_batch/index.cadastrarAlunos
     events:
       - s3:
-          bucket: alunos-csv
+          bucket: alunos-csv-titiura
           event: s3:ObjectCreated:*
           rules:
             - suffix: .csv
