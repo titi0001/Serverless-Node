@@ -63,7 +63,7 @@ provider:
           Action: 
             - sqs:*
           Resource:
-            Fn::GetAtt:[FilaCadastro, Arn]
+            Fn::GetAtt: [FilaCadastro, Arn]
 
   environment:
     STAGE: ${sls:stage}
@@ -96,6 +96,16 @@ functions:
           path: /alunos/presignedurl
           method: post
   
+  cadastroCosumer:
+    handler: src/functions/consumers/index.cadastroCosumer.cadastroCosumer
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - FilaCadastro
+              - Arn
+          batchSize: 1
+
 custom:
   serverless-offline:
     httpPort: 3001
