@@ -4,6 +4,7 @@ import CampoArquivo from "../CampoArquivo";
 import { requestPresignURL, enviaArquivoViaURL } from "../../servicos/api-connect";
 import "./FormularioBatch.css";
 
+
 const FormularioBatch = (props) => {
   const [ arquivoSelecionado, setArquivoSelecionado ] = useState(null)
   const [ resOperacaoBatch, setResOperacaoBatch ] = useState('')

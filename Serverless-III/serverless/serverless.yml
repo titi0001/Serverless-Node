@@ -58,7 +58,7 @@ functions:
     enabled: false
 
   enviarUrlPreassinda:
-    handler: src/functions/presignedUrl/index.enviarUrlPreassinda
+    handler: src/functions/presignedUrl/index.enviarUrlPreassinada
     events:
       - httpApi:
           path: /alunos/presignedurl
