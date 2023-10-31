@@ -38,6 +38,8 @@ provider:
             - arn:aws:s3:::alunos-csv-titiura/*
   environment:
     STAGE: ${sls:stage}
+    ACCESS_KEY_ID: ${param:ACCESS_KEY_ID}
+    SECRET_ACCESS_KEY: ${param:SECRET_ACCESS_KEY}
 
 functions:
   cadastrarAlunos:
