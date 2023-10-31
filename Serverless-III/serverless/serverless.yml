@@ -26,6 +26,22 @@ params:
     bucket: alunos-csv-titiura
 
 provider:
+  httpApi:
+    cors:
+      allowedOrigins:
+        - '*'
+      allowedHeaders:
+        - Content-Type
+        - Access-Control-Allow-Origin
+        - Access-Control-Allow-Headers
+        - Access-Control-Allow-Methods
+      allowedMethods:
+        - GET
+        - POST
+        - PUT
+  logs:
+    httpApi: true
+
   name: aws
   runtime: nodejs18.x
   iam:
