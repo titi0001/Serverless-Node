@@ -89,15 +89,15 @@ functions:
           method: post
     enabled: false
 
-  enviarUrlPreassinda:
+  enviarUrlPreassinada:
     handler: src/functions/presignedUrl/index.enviarUrlPreassinada
     events:
       - httpApi:
           path: /alunos/presignedurl
           method: post
   
-  cadastroCosumer:
-    handler: src/functions/consumers/cadastroCosumer.cadastroCosumer
+  cadastroConsumer:
+    handler: src/functions/consumers/cadastroConsumer.cadastroConsumer
     events:
       - sqs:
           arn:

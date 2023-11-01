@@ -41,13 +41,16 @@ async function enviaArquivoViaURL (url, arquivo) {
 }
 
 async function requestPresignURL (nomeArquivo) {
-  try{
-    const fetchObj= buildFetchObj('POST', 'application/json', JSON.stringify({nomeArquivo}));
-    const res = await fetch(`${config.slsUrl.prod}/alunos/presignedurl`, fetchObj);
+
+  try {
+    const fetchObj = buildFetchObj('POST', 'application/json', JSON.stringify({ nomeArquivo }));
+
+    const res = await fetch(`${config.slsUrl.prod}/alunos/presignedurl`, fetchObj)
 
     const body = await res.json();
+
     return body.url;
-  }catch(erro){
+  } catch (erro) {
     return erro;
   }
 }

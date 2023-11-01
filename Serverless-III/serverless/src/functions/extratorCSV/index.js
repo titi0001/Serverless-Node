@@ -1,6 +1,6 @@
 const { S3Client, GetObjectCommand } = require('@aws-sdk/client-s3');
 const { converteDadosCsv } = require('./converteDadosCsv');
-const { cadastroProducer } = require('../producers/cadastroProducer');
+const { cadastroProducer } = require('../../functions/producers/cadastroProducer');
 
 async function criaClienteS3 () {
   if(process.env.STAGE === 'dev') {
