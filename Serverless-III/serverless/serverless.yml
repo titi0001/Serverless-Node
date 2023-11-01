@@ -73,7 +73,7 @@ provider:
 
 functions:
   extraiDadosCsv:
-    handler: src/functions/extratorCsv/index.extraiDadosCsv
+    handler: src/functions/extratorCSV/index.extraiDadosCsv
     events:
       - s3:
           bucket: alunos-csv-titiura
@@ -97,7 +97,7 @@ functions:
           method: post
   
   cadastroCosumer:
-    handler: src/functions/consumers/index.cadastroCosumer.cadastroCosumer
+    handler: src/functions/consumers/cadastroCosumer.cadastroCosumer
     events:
       - sqs:
           arn:

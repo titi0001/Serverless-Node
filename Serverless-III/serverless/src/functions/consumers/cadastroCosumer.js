@@ -1,3 +1,3 @@
-module.exports.cadastroConsumer = async (envents) => {
-  console.log(envents);
+module.exports.cadastroCosumer = async (events) => {
+  console.log('DADOS ENVENTO DO CONSUMER',events);
 };
