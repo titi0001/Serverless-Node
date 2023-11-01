@@ -1,0 +1,117 @@
+org: titiura
+app: serverless-3
+service: api-alunos
+frameworkVersion: '3'
+
+resources:
+  extensions:
+    S3BucketAlunoscsvtitiura:
+      Properties:
+        CorsConfiguration:
+          CorsRules:
+            - AllowedMethods:
+                - POST
+                - PUT
+                - GET
+                - HEAD
+              AllowedOrigins:
+                - "*"
+              AllowedHeaders:
+                - "*"
+  Resources:
+    FilaCadastro:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: cadastro.fifo
+        FifoQueue: true
+        SqsManagedSseEnabled: false
+
+params:
+  dev:
+    bucket: alunos-csv-local
+  prod:
+    bucket: alunos-csv-titiura
+
+provider:
+  httpApi:
+    cors:
+      allowedOrigins:
+        - '*'
+      allowedHeaders:
+        - Content-Type
+        - Access-Control-Allow-Origin
+        - Access-Control-Allow-Headers
+        - Access-Control-Allow-Methods
+      allowedMethods:
+        - GET
+        - POST
+        - PUT
+  logs:
+    httpApi: true
+
+  name: aws
+  runtime: nodejs18.x
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action: 
+            - s3:GetObject
+          Resource: 
+            - arn:aws:s3:::alunos-csv-titiura/*
+        - Effect: Allow
+          Action: 
+            - sqs:*
+          Resource: 
+            Fn::GetAtt: [FilaCadastro, Arn]
+
+  environment:
+    STAGE: ${sls:stage}
+    ACCESS_KEY_ID: ${param:ACCESS_KEY_ID}
+    SECRET_ACCESS_KEY: ${param:SECRET_ACCESS_KEY}
+    SQS_QUEUE_CADASTRO_URL: { Ref: FilaCadastro }
+
+functions:
+  extraiDadosCsv:
+    handler: src/functions/extratorCSV/index.extraiDadosCsv
+    events:
+      - s3:
+          bucket: alunos-csv-titiura
+          event: s3:ObjectCreated:*
+          rules:
+            - suffix: .csv
+
+  simulandoUploadDoCsv:
+    handler: src/functions/extratorCsv/local/index.simulandoUploadDoCsv
+    events:
+      - httpApi:
+          path: /alunos/batch
+          method: post
+    enabled: false
+
+  enviarUrlPreassinada:
+    handler: src/functions/presignedUrl/index.enviarUrlPreassinada
+    events:
+      - httpApi:
+          path: /alunos/presignedurl
+          method: post
+  
+  cadastroConsumer:
+    handler: src/functions/consumers/cadastroConsumer.cadastroConsumer
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - FilaCadastro
+              - Arn
+          batchSize: 1
+
+custom:
+  serverless-offline:
+    httpPort: 3001
+
+plugins:
+  - serverless-offline
+  - serverless-s3-local
+  - serverless-disable-functions
+  
