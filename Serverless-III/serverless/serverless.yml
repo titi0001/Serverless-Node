@@ -82,7 +82,7 @@ functions:
             - suffix: .csv
 
   simulandoUploadDoCsv:
-    handler: src/functions/extratorCsv/local/index.simulandoUploadDoCsv
+    handler: src/functions/extratorCSV/local/index.simulandoUploadDoCsv
     events:
       - httpApi:
           path: /alunos/batch
