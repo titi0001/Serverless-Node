@@ -1,5 +1,6 @@
 const config = require('../../../config/config.json');
 const { fetchApi, buildResponse } = require('../../../utils/fetchHelpers');
+const { FetchErro } = require('./erros/FetchErro');
 
 module.exports.cadastrarAlunos = async (aluno) => {
   try {
@@ -10,20 +11,24 @@ module.exports.cadastrarAlunos = async (aluno) => {
       aluno
     );
 
-    const res = buildResponse(chamadaApi.statusCode, chamadaApi.body, chamadaApi.headers);
+    const res = buildResponse(
+      chamadaApi.statusCode,
+      chamadaApi.body,
+      chamadaApi.headers
+    );
 
-    if (res.statusCode !== 201) {
+  
+    if (res.statusCode === 201) {
       return {
-        menssagem: 'Erro ao cadastrar aluno',
+        menssagem: 'sucesso no cadastro',
         status: res.statusCode,
       };
     }
 
-    return {
-      menssagem: 'outro status',
-      status: res.statusCode,
-    };
+    throw new FetchErro(res.statusCode, aluno);
+
   } catch (error) {
-    throw new Error(error);
+    console.log(error);
+    throw error;
   }
 };
