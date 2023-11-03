@@ -4,6 +4,6 @@
     "prod": "http://curso-serverless3-api-1919269378.us-east-1.elb.amazonaws.com"
   },
   "slsUrl": {
-    "prod": "https://9g0pl8pn7c.execute-api.us-east-1.amazonaws.com"
+    "prod": "https://6d8jecc9m1.execute-api.us-east-1.amazonaws.com"
   }
 }

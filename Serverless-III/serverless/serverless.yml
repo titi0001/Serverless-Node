@@ -1,5 +1,5 @@
 org: titiura
-app: api
+app: api-alunos
 service: api
 frameworkVersion: '3'
 
@@ -65,11 +65,11 @@ provider:
           Resource: 
             Fn::GetAtt: [FilaCadastro, Arn]
 
-  # environment:
-  #   STAGE: ${sls:stage}
-  #   ACCESS_KEY_ID: ${param:ACCESS_KEY_ID}
-  #   SECRET_ACCESS_KEY: ${param:SECRET_ACCESS_KEY}
-  #   SQS_QUEUE_CADASTRO_URL: { Ref: FilaCadastro }
+  environment:
+    STAGE: ${sls:stage}
+    ACCESS_KEY_ID: ${param:ACCESS_KEY_ID}
+    SECRET_ACCESS_KEY: ${param:SECRET_ACCESS_KEY}
+    SQS_QUEUE_CADASTRO_URL: { Ref: FilaCadastro }
 
 functions:
   extraiDadosCsv:
