@@ -25,6 +25,22 @@ resources:
         QueueName: cadastro.fifo
         FifoQueue: true
         SqsManagedSseEnabled: false
+        RedrivePolicy:
+          deadLetterTargetArn:
+            Fn::GetAtt:
+              - DlqCadastro
+              - Arn
+          maxReceiveCount: 5
+        VisibilityTimeout: 10
+
+    DlqCadastro:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: cadastro-dlq.fifo
+        FifoQueue: true
+        SqsManagedSseEnabled: false
+        MessageRetentionPeriod: 86400
+
 
 params:
   dev:
@@ -105,6 +121,7 @@ functions:
               - FilaCadastro
               - Arn
           batchSize: 1
+    timeout: 2
 
 custom:
   serverless-offline:
