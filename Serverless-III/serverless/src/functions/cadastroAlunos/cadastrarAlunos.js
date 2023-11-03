@@ -1,7 +1,7 @@
 const config = require('../../../config/config.json');
 const { fetchApi, buildResponse } = require('../../../utils/fetchHelpers');
 
-module.exports.cadastrarAlunosNoBd = async (aluno) => {
+module.exports.cadastrarAlunos = async (aluno) => {
   try {
     const chamadaApi = await fetchApi(
       `${config.fetchApi.prod}/alunos`,
