@@ -33,14 +33,6 @@ resources:
           maxReceiveCount: 5
         VisibilityTimeout: 10
 
-    DlqCadastro:
-      Type: AWS::SQS::Queue
-      Properties:
-        QueueName: cadastro-dlq.fifo
-        FifoQueue: true
-        SqsManagedSseEnabled: false
-        MessageRetentionPeriod: 86400
-
     FilaEmailConfirmacao:
       Type: AWS::SQS::Queue
       Properties:
@@ -54,6 +46,14 @@ resources:
         #       - Arn
         #   maxReceiveCount: 5
         VisibilityTimeout: 10
+
+    DlqCadastro:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: cadastro-dlq.fifo
+        FifoQueue: true
+        SqsManagedSseEnabled: false
+        MessageRetentionPeriod: 86400
 
 params:
   dev:
@@ -150,6 +150,17 @@ functions:
           arn:
             Fn::GetAtt:
               - FilaEmailConfirmacao
+              - Arn
+          batchSize: 1
+    timeout: 2
+
+  emailErroCadastro:
+    handler: src/functions/consumers/trataErrosCadastroConsumer.trataErrosCadastroConsumer
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - DlqCadastro
               - Arn
           batchSize: 1
     timeout: 2

@@ -1,5 +1,4 @@
 const nodemailer = require('nodemailer');
-// const { buildEmail } = require('../../../utils/buildEmail');
 
 const emailTransport = async () => {
   return nodemailer.createTransport({
