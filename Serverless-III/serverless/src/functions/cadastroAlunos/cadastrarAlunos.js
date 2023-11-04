@@ -1,29 +1,37 @@
 const config = require('../../../config/config.json');
-const { fetchApi, buildResponse } = require('../../../utils/fetchHelpers');
+const { fetchApi } = require('../../../utils/fetchHelpers');
+const { FetchErro } = require('./erros/FetchErro');
+const { buildEmail } = require('../../../utils/buildEmail');
+const { emailConfirmaProducer } = require('../producers/emailConfirmaProducer');
 
 module.exports.cadastrarAlunos = async (aluno) => {
   try {
-    const chamadaApi = await fetchApi(
+    const res = await fetchApi(
       `${config.fetchApi.prod}/alunos`,
       'POST',
       'application/json',
       aluno
     );
 
-    const res = buildResponse(chamadaApi.statusCode, chamadaApi.body, chamadaApi.headers);
+    const objAluno = JSON.parse(aluno);
 
-    if (res.statusCode !== 201) {
+    if (res.statusCode === 201) {
+      await emailConfirmaProducer(
+        buildEmail(
+          objAluno.email,
+          `Cadastro de ${objAluno.nome}`,
+          `O cadastro do email ${objAluno.email} foi feito com sucesso`
+        )
+      );
       return {
-        menssagem: 'Erro ao cadastrar aluno',
+        menssagem: 'sucesso no cadastro',
         status: res.statusCode,
       };
     }
 
-    return {
-      menssagem: 'outro status',
-      status: res.statusCode,
-    };
+    throw new FetchErro(res.statusCode, aluno);
   } catch (error) {
-    throw new Error(error);
+    console.log(error);
+    throw error;
   }
 };
